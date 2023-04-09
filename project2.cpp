@@ -2,6 +2,7 @@
 #include <pthread.h>
 
 
+const int TRUE = 0; 
 
 void* print_char(void* arg) {
     char c = *(char*)arg;
