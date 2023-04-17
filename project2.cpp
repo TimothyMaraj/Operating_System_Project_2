@@ -1,3 +1,11 @@
+/*
+- implementing the else part of the thread one function
+  check photots for details
+
+
+*/
+
+
 #include <iostream>
 #include <pthread.h> 
 #include <vector>
@@ -76,37 +84,61 @@ void hello_threaded()
 
 // Mutex and Condition var: 
 
-pthread_mutex_t deck_acess_mutex; 
+pthread_mutex_t deckAccessMutex; 
 
 pthread_cond_t thread_one_turn_cv; 
 pthread_cond_t thread_two_turn_cv;
 
-pthread_cond_t end_of_round_cv;
 
+pthread_cond_t startOfRound; 
+pthread_cond_t end_of_round_cv;
+pthread_cond_t endOfGame_cv; 
 
 // Data structures for vars 
 
 std::vector<int> deck {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
-std::vector<int> thread_one_hand {0};
-std::vector<int> thread_two_hand {0};
+std::vector<int> agentHand;
+std::vector<int> thread_one_hand;
+std::vector<int> thread_two_hand;
 
 // global bool vars
 bool one_is_agent = false; 
 bool two_is_agent = false; 
 
+bool threadOneStartsRound = false;
+bool threadtwoStartsRound = false;
+
+
+
+bool startRound = false; 
 bool endRound = false; 
-bool threadOneStartsRound = false; 
+bool endGame = false; 
+
+
+// helper functions
+
+
+void shuffle_deck()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(deck.begin(), deck.end(), gen);
+}
+
+
+
 
 // thread functions 
 
-void* agent_function(void* arg)
+void* agentFuntion(void* arg)
 {
     int thread_id = *((int*) arg);
-    pthread_mutex_lock(&deck_acess_mutex);
+    pthread_mutex_lock(&deckAccessMutex);
 
     if(thread_id == 1)
     {
         one_is_agent = true; 
+        startRound = true;
         
     }
     if(thread_id == 2)
@@ -127,52 +159,85 @@ void* agent_function(void* arg)
     }
     if(thread_id == 6)
     {
-        std::cout << "Thread6"<<std::endl; 
+        std::cout << "Thread6"<< std::endl; 
     }
     
     
 
     while(!endRound)
     {
-        pthread_cond_wait(&end_of_round_cv,&deck_acess_mutex);
+        pthread_cond_wait(&end_of_round_cv,&deckAccessMutex);
     }
     // what needs to happen at the end of round? 
-    pthread_mutex_unlock(&deck_acess_mutex);
+    pthread_mutex_unlock(&deckAccessMutex);
     endRound = false; 
+    pthread_exit(NULL);
+    return NULL;
 }
 
 void* thread_one(void* arg)
 {
+    while(!startRound)
+
     if(one_is_agent)
     {
-        pthread_mutex_lock(&)
+        pthread_mutex_lock(&deckAccessMutex);
 
-        
+        shuffle_deck();
+        agentHand.push_back(deck.front());
+        //give other threads their hand
+        thread_two_hand.push_back(deck.front());
 
+        pthread_cond_signal(&startOfRound);
 
-        pthread_mutex_ulock(&)
+        while(!endRound)
+        { 
+            std::cout << "agent is player one" << std::endl; 
+            pthread_cond_wait(&end_of_round_cv,&deckAccessMutex);}
+
+        pthread_mutex_unlock(&deckAccessMutex);
         
     }
     else
     {
         //conditional wait until turn
-        while(!threadOneStartsRound)
-        {
 
+        pthread_mutex_lock(&deckAccessMutex);
+        while(!threadOneStartsRound)
+        {std::cout << "Thread One Start0" << std::endl;
+            pthread_cond_wait(&thread_one_turn_cv,&deckAccessMutex);
         }
+        std::cout << "Thread One Start" << std::endl;
+        pthread_cond_signal(&endOfGame_cv);
     }
+
+    pthread_exit(NULL);
+    pthread_exit(NULL);
+    return NULL;
 }
 
 int main()
 {
 
+int starter = 1; 
+int* firstPlayer = &starter; 
 
 
-pthread_t agent_thread; 
+pthread_t agentThread; 
+pthread_t playerOne,playerTwo; 
+pthread_create(&agentThread,NULL,agentFuntion,(void*)firstPlayer);
+pthread_create(&playerOne,NULL,thread_one,NULL);
+
+pthread_mutex_lock(&deckAccessMutex);
+while(!endGame)
+{
+    pthread_cond_wait(&endOfGame_cv,&deckAccessMutex);
+}
+pthread_mutex_unlock(&deckAccessMutex);
 
 
 // destroy mutexs
-pthread_mutex_destroy(&deck_acess_mutex);
+pthread_mutex_destroy(&deckAccessMutex);
 
 // destroy condition vars
 pthread_cond_destroy(&thread_one_turn_cv);
