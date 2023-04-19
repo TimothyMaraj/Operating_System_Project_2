@@ -45,7 +45,7 @@ pthread_cond_t endOfGame_cv = PTHREAD_COND_INITIALIZER;
 
 // Global Variables
 
-std::vector<int> deck {1,2,3,4,5,6,7,8};
+std::vector<int> deck {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8};
 
 int randomSeed = 0; 
 int targetCard = 0; 
@@ -57,6 +57,8 @@ int playerThreeHand = 0;
 int playerFourHand = 0;
 int playerFiveHand = 0; 
 int playerSixHand = 0;
+
+int threads =0; 
 
     // game stats and varis
 int game_round = 1; 
@@ -105,6 +107,11 @@ void* agentThreadFunc(void* arg)
 {
     // use game_round to check track of whose 
     // 
+    while(threads != 6)
+    {
+        
+    }
+    std::cout << "thread: " << threads << std::endl;
     if(game_round == 1)
     {
 
@@ -118,6 +125,7 @@ void* agentThreadFunc(void* arg)
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
 
         // stops loops
@@ -131,10 +139,11 @@ void* agentThreadFunc(void* arg)
         twoIsAgent = true; 
 
         std::cout << "Agent Function Selects Two" << std::endl; 
-        pthread_cond_broadcast(&thread_two_turn_cv); 
-
+        pthread_cond_signal(&thread_two_turn_cv); 
+        std::cout << "Agent Function Selects Two" << std::endl;
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 3)
@@ -149,6 +158,7 @@ void* agentThreadFunc(void* arg)
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 4)
@@ -163,6 +173,7 @@ void* agentThreadFunc(void* arg)
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 5)
@@ -177,6 +188,7 @@ void* agentThreadFunc(void* arg)
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 6)
@@ -191,6 +203,7 @@ void* agentThreadFunc(void* arg)
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"Agent End of game_round"<<std::endl;
+        threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else
@@ -208,9 +221,11 @@ void* agentThreadFunc(void* arg)
 
 void* playerOne(void* arg)
 {
-
+     
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
+    std::cout << "P1 Starts Turn" << std::endl;
+    threads++; 
     pthread_cond_wait(&thread_one_turn_cv,&deckAccessMutex);
     std::cout << "P1 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
@@ -285,11 +300,11 @@ void* playerOne(void* arg)
 }
 
 void* playerTwo(void* arg)
-{
+{   
     std::cout << "P2 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go
-    std::cout << "P2 Starts Waits" << std::endl;
+    threads++;
     pthread_cond_wait(&thread_two_turn_cv,&deckAccessMutex);
     std::cout << "P2 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
@@ -298,9 +313,10 @@ void* playerTwo(void* arg)
     {
         std::cout << "P2 Starts Turn" << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
-
+        std::cout << "P2 Starts Turn" << std::endl; 
         // the game_round
         targetCard = deck.front(); 
+        std::cout << "tagert: " <<targetCard<< std::endl; 
         drawTop(); 
 
         playerOneHand = deck.front(); 
@@ -356,9 +372,11 @@ void* playerTwo(void* arg)
 }
 
 void* playerThree(void* arg)
-{
+{ 
+    std::cout << "P3 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
+    threads++;
     pthread_cond_wait(&thread_three_turn_cv,&deckAccessMutex);
     std::cout << "P3 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
@@ -429,9 +447,11 @@ void* playerThree(void* arg)
 }
 
 void* playerFour(void* arg)
-{
+{ 
+    std::cout << "P4 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
+    threads++;
     pthread_cond_wait(&thread_four_turn_cv,&deckAccessMutex);
     std::cout << "P4 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
@@ -490,9 +510,17 @@ void* playerFour(void* arg)
         std::cout << "Player Four Went" << std::endl;
 
         if(!fiveIsAgent)
+        {
+            std::cout << "P4 signal 5" << std::endl;
+            std::cout << "fiveIsAgent: " << fiveIsAgent << std::endl;
             pthread_cond_signal(&thread_five_turn_cv);
+        }
         else
+        {
+            std::cout << "P4 signal 6" << std::endl;
+            std::cout << "fiveIsAgent: " << fiveIsAgent << std::endl;
             pthread_cond_signal(&thread_six_turn_cv);
+        }
 
             
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
@@ -506,9 +534,11 @@ void* playerFour(void* arg)
 
 
 void* playerFive(void* arg)
-{
+{ 
+    std::cout << "P5 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
+    threads++;
     pthread_cond_wait(&thread_five_turn_cv,&deckAccessMutex);
     std::cout << "P5 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
@@ -556,7 +586,7 @@ void* playerFive(void* arg)
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         std::cout<<"P4 End of game_round"<<std::endl;
         pthread_mutex_unlock(&deckAccessMutex);
-        fourIsAgent = false; 
+        fiveIsAgent = false; 
         game_round++; 
     }
     else
@@ -587,10 +617,13 @@ void* playerFive(void* arg)
 }
 
 void* playerSix(void* arg)
-{
+{ 
+    std::cout << "P6 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
+    threads++;
     pthread_cond_wait(&thread_six_turn_cv,&deckAccessMutex);
+    
     std::cout << "P6 Ends Waits" << std::endl;
     pthread_mutex_unlock(&deckAccessMutex);
 
@@ -623,7 +656,7 @@ void* playerSix(void* arg)
         playerFiveHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P5 Starts game_round" << std::endl;
+        std::cout << "P1 Starts game_round" << std::endl;
         // start game_round 
       
         pthread_cond_signal(&thread_one_turn_cv);
@@ -722,7 +755,8 @@ void threadCreate()
 int main(int argc, char* argv[])
 {
 
-    randomSeed = atoi(argv[1]);
+   // randomSeed = atoi(argv[1]);
+    randomSeed = 9; 
     for(int i = 0; i < 6; i++)
         threadCreate(); 
     
