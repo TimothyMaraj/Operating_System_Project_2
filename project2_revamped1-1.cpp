@@ -1,8 +1,19 @@
 
 /*
+- implement the endGame condition for the agent functions: note when agent changes how do you handle this ? *
+- implement on paper 
+    - 2) check for win in player portion of each function add cards back in some sense
+         check for lose*: add cards back 
+        file print 
+        console print 
 
-- need to implement fully all agent parts of each functions
-= need to implement else part of each thread
+    -3) agent when exits should use logger to print out deck 
+
+    ? 
+
+
+    run with this command on eros/zeus (only tried eros )
+    gcc -std=c++11 -lpthread project2OS.cpp -o "proj2.out" -lstdc++
 
 
 */
@@ -45,7 +56,8 @@ pthread_cond_t endOfGame_cv = PTHREAD_COND_INITIALIZER;
 
 // Global Variables
 
-std::vector<int> deck {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8};
+//std::vector<int> deck {1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,9,10,11,12,13,1,2,3,4,5,6,7,8,1,2,3,4,5,6,7,8,9,10,11,12,13};
+std::vector<int> deck {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
 
 int randomSeed = 0; 
 int targetCard = 0; 
@@ -59,7 +71,7 @@ int playerFiveHand = 0;
 int playerSixHand = 0;
 
 int threads =0; 
-
+int threadExit = 0; 
     // game stats and varis
 int game_round = 1; 
 bool endGame = false;               // used to loop all threads
@@ -70,7 +82,7 @@ bool threeIsAgent = false;
 bool fourIsAgent = false; 
 bool fiveIsAgent = false; 
 bool sixIsAgent = false; 
-
+bool DEBUG = true; 
 std::ofstream loggerOut; 
 // Helper Functions 
 
@@ -102,29 +114,42 @@ int probOfSwap()
     return (rand() % 10 + 1); 
 }
 
+void printVector()
+{
+    std::cout << "DECK" << " ";
+    for(auto i : deck)
+    {
+        std::cout << i << " "; 
+    }
+    std::cout << std::endl; 
+}
+
 // Agent Thread 
 void* agentThreadFunc(void* arg)
 {
     // use game_round to check track of whose 
     // 
+    std::cout << "Round" << game_round << std::endl; 
     while(threads != 6)
     {
         
     }
-    std::cout << "thread: " << threads << std::endl;
+    // make sure the endgame cond is set back to false at start of round
+    endGame = false; 
+    std::cout << "All Threads Created" << std::endl; 
     if(game_round == 1)
     {
-
-        std::cout << "Agent Function" << std::endl; 
+        std::cout << "One is Agent " << std::endl; 
+       
 
         pthread_mutex_lock(&deckAccessMutex);
         oneIsAgent = true; 
 
-        std::cout << "Agent Function Selects One" << std::endl;
+     
         pthread_cond_signal(&thread_one_turn_cv); 
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+       
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
 
@@ -133,76 +158,75 @@ void* agentThreadFunc(void* arg)
     }
     else if(game_round == 2)
     {
-        std::cout << "Agent Function" << std::endl; 
-
+       
+        std::cout << "Two is Agent " << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
         twoIsAgent = true; 
 
-        std::cout << "Agent Function Selects Two" << std::endl; 
+        
         pthread_cond_signal(&thread_two_turn_cv); 
-        std::cout << "Agent Function Selects Two" << std::endl;
+        
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+       
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 3)
     {
-        std::cout << "Agent Function" << std::endl; 
-
+        
+        std::cout << "Three is Agent " << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
         threeIsAgent = true; 
 
-        std::cout << "Agent Function Selects Three" << std::endl;
+       
         pthread_cond_signal(&thread_three_turn_cv); 
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+       
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 4)
     {
-        std::cout << "Agent Function" << std::endl; 
-
+        
+        std::cout << "Four is Agent " << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
         fourIsAgent = true; 
 
-        std::cout << "Agent Function Selects Four" << std::endl;
+        
         pthread_cond_signal(&thread_four_turn_cv); 
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+       
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 5)
     {
-        std::cout << "Agent Function" << std::endl; 
-
+        
+        std::cout << "Five is Agent " << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
         fiveIsAgent = true; 
 
-        std::cout << "Agent Function Selects Five" << std::endl;
+       
         pthread_cond_signal(&thread_five_turn_cv); 
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+       
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
     else if(game_round == 6)
     {
-        std::cout << "Agent Function" << std::endl; 
-
+        std::cout << "Six is Agent " << std::endl; 
         pthread_mutex_lock(&deckAccessMutex);
         sixIsAgent = true; 
 
-        std::cout << "Agent Function Selects Six" << std::endl;
+        
         pthread_cond_signal(&thread_six_turn_cv); 
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"Agent End of game_round"<<std::endl;
+        
         threads = 0; 
         pthread_mutex_unlock(&deckAccessMutex);
     }
@@ -211,8 +235,17 @@ void* agentThreadFunc(void* arg)
         std::cout << "Error: game_round Too Large or Too Big: " << game_round << std::endl;
     }
     
+    while(threadExit != 6)
+    {
+        std::cout << threadExit << std::endl; 
+    }
 
-    std::cout << "Agent Exits" << std::endl;
+    if(DEBUG){std::cout << "THREADS EXITED: " << threadExit << std::endl; }
+    
+    threadExit = 0; 
+    printVector();
+
+    std::cout << "Agent Exit" << std::endl; 
     return NULL; 
     pthread_exit(NULL);
 }
@@ -224,16 +257,32 @@ void* playerOne(void* arg)
      
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
-    std::cout << "P1 Starts Turn" << std::endl;
+    
     threads++; 
     pthread_cond_wait(&thread_one_turn_cv,&deckAccessMutex);
-    std::cout << "P1 Ends Waits" << std::endl;
-    pthread_mutex_unlock(&deckAccessMutex);
     
+    
+    if(!oneIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 1: lost round " << game_round << std::endl;
+            std::cout << "1 Exit " << std::endl; 
+            if(!twoIsAgent)
+                pthread_cond_signal(&thread_two_turn_cv);
+            else 
+                pthread_cond_signal(&thread_three_turn_cv);
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
+   pthread_mutex_unlock(&deckAccessMutex);
+
     if(oneIsAgent)
     { 
 
-        std::cout << "P1 Starts Turn" << std::endl;
+        
         pthread_mutex_lock(&deckAccessMutex);
         
         
@@ -243,6 +292,8 @@ void* playerOne(void* arg)
 
         targetCard = deck.front();
         drawTop(); 
+        std::cout << "PLAYER 1: Target Card " << targetCard << std::endl;
+         
 
         playerTwoHand = deck.front(); 
         drawTop(); 
@@ -259,22 +310,32 @@ void* playerOne(void* arg)
         playerSixHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P1 Starts game_round" << std::endl;
+        
+    
         // start game_round 
        
         pthread_cond_signal(&thread_two_turn_cv);
-        std::cout << "P2 Come in" << std::endl;
+       
         
        
-        std::cout << "P1 Starts Wait" << std::endl;
+      
 
         
         // the wait for game_round to end 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P1 End of game_round"<<std::endl;
+        if(endGame)
+        {
+            loggerOut << "PLAYER 1: lost round " << game_round << std::endl;
+            std::cout << "1 Exit " << std::endl;  
+        }
+
+        
         pthread_mutex_unlock(&deckAccessMutex);
         oneIsAgent = false; 
         game_round++; 
+
+        
+
         
     }
     else
@@ -282,41 +343,131 @@ void* playerOne(void* arg)
         
 
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "Player One Went" << std::endl;
+        // Logger:
+            // PLAYER #: hand 5
+        // draw a new card
+        // Logger: 
+            //Player #: draws 7
+            // show hand
+        // discard at random 
+            // push back that card onto vector
+            // Logger: (which card was discard formatt below)
+                // PLAYER #: discards 7 at random 
+        // Logger: 
+            // PLAYER #: hand 5
+        //checks win 
+
+    // logger 
+        int tempCard = 0; 
+        loggerOut << "PLAYER 1: hand " << playerOneHand << std::endl;
+    // draw hand and log 
+        tempCard = deck.front(); 
+        drawTop(); 
+        loggerOut << "PLAYER 1: draws  " << tempCard << std::endl;
+    // show hand 
+        loggerOut << "PLAYER 1: hand " << "(" << playerOneHand << ","<< tempCard << ")" << " <> " << "Target card is " << targetCard << std::endl;
+        std::cout << "PLAYER 1: hand " << "(" << playerOneHand << ","<< tempCard << ")" << std::endl; 
+        
+    // discard and check win    
+        if(probOfSwap() > 5)
+        {
+            // push back cards 
+            deck.push_back(playerOneHand);
+            deck.push_back(tempCard); 
+            //logger 
+            loggerOut << "PLAYER 1: discards "<< playerOneHand << " at random" << std::endl;
+            playerOneHand = tempCard; 
+            // check now if playerHand is winner 
+
+            // check win 
+            if(playerOneHand == targetCard)
+            {
+                loggerOut << "PLAYER 1: wins round "<< game_round << std::endl;
+                std::cout << "PLAYER 1: WIN" << std::endl; 
+                endGame = true;
+            }
+
+        }
+        else
+        {
+            deck.push_back(tempCard); 
+            deck.push_back(playerOneHand);
+            loggerOut << "PLAYER 1: discards "<< tempCard << " at random" << std::endl;
+            tempCard = 0; 
+            // check win 
+            if(playerOneHand == targetCard)
+            {
+                std::cout << "PLAYER 1: WIN" << std::endl; 
+                loggerOut << "PLAYER 1: wins round "<< game_round << std::endl;
+                endGame = true;
+            }
+        }
+
+
 
         if(!twoIsAgent)
             pthread_cond_signal(&thread_two_turn_cv);
         else 
             pthread_cond_signal(&thread_three_turn_cv);
-        std::cout << "P1 Waits for End of Round" << std::endl;
+        
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
+// ******************************************************************* the loss
+        if(endGame)
+        {
+            loggerOut << "PLAYER 1: lost round " << game_round << std::endl;
+            std::cout << "1 Exit " << std::endl; 
+            if(!twoIsAgent)
+                pthread_cond_signal(&thread_two_turn_cv);
+            else 
+                pthread_cond_signal(&thread_three_turn_cv);
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+
         pthread_mutex_unlock(&deckAccessMutex);
     }
 
 
-    std::cout << "Player One Exits" << std::endl;
+    threadExit++; 
     return NULL; 
     pthread_exit(NULL);
 }
 
 void* playerTwo(void* arg)
 {   
-    std::cout << "P2 Starts Turn" << std::endl;
+   
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go
     threads++;
     pthread_cond_wait(&thread_two_turn_cv,&deckAccessMutex);
-    std::cout << "P2 Ends Waits" << std::endl;
+  
     pthread_mutex_unlock(&deckAccessMutex);
+    if(!twoIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 2: lost round " << game_round << std::endl;
+            std::cout << "2 Exit " << std::endl; 
+            if(!threeIsAgent)
+                pthread_cond_signal(&thread_three_turn_cv);
+            else
+                pthread_cond_signal(&thread_four_turn_cv); 
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
 
+
+ 
     if(twoIsAgent)
     {
-        std::cout << "P2 Starts Turn" << std::endl; 
+       
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "P2 Starts Turn" << std::endl; 
+       
         // the game_round
         targetCard = deck.front(); 
-        std::cout << "tagert: " <<targetCard<< std::endl; 
+        std::cout << "PLAYER 2: Target Card " << targetCard << std::endl;
         drawTop(); 
 
         playerOneHand = deck.front(); 
@@ -335,15 +486,12 @@ void* playerTwo(void* arg)
         drawTop();
 
         pthread_cond_signal(&thread_one_turn_cv);
-        std::cout << "P1 Come in" << std::endl;
-       
-       
 
         // the wait for game_round to end 
-        std::cout << "P2 As Agent begins Wait" << std::endl;
+        if(DEBUG){std::cout << "PLAYER 2 BEGINS WAITING AS AGENT " << std::endl; }
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P2 End of game_round"<<std::endl;
-
+    
+        if(DEBUG){std::cout << "PLAYER 2 ENDS WAITING AS AGENT " << std::endl; }
         pthread_mutex_unlock(&deckAccessMutex);
         twoIsAgent = false; 
         game_round++;
@@ -353,19 +501,83 @@ void* playerTwo(void* arg)
         
         
         pthread_mutex_lock(&deckAccessMutex);    
-        std::cout << "Player Two Went" << std::endl;
+        
+        // Logger:
+            // PLAYER #: hand 5
+        // draw a new card
+        // Logger: 
+            //Player #: draws 7
+            // show hand
+        // discard at random 
+            // push back that card onto vector
+            // Logger: (which card was discard formatt below)
+                // PLAYER #: discards 7 at random 
+        // Logger: 
+            // PLAYER #: hand 5
+        //checks win 
 
+    // logger 
+        int tempCard = 0; 
+        loggerOut << "PLAYER 2: hand " << playerTwoHand << std::endl;
+    // draw hand and log 
+        tempCard = deck.front(); 
+        drawTop(); 
+        loggerOut << "PLAYER 2: draws  " << tempCard << std::endl;
+    // show hand 
+        loggerOut << "PLAYER 2: hand " << "(" << playerTwoHand << ","<< tempCard << ")" << " <> " << "Target card is " << targetCard << std::endl;
+        std::cout << "PLAYER 2: hand " << "(" << playerTwoHand << ","<< tempCard << ")" << std::endl; 
+        
+    // discard and check win    
+        if(probOfSwap() > 5)
+        {
+            // push back cards 
+            deck.push_back(playerTwoHand);
+            deck.push_back(tempCard); 
+            //logger 
+            loggerOut << "PLAYER 2: discards "<< playerTwoHand << " at random" << std::endl;
+            playerTwoHand = tempCard; 
+            // check now if playerHand is winner 
+
+            // check win 
+            if(playerTwoHand == targetCard)
+            {
+                loggerOut << "PLAYER 2: wins round "<< game_round << std::endl;
+                std::cout << "PLAYER 2: WIN" << std::endl; 
+                endGame = true;
+            }
+
+        }
+        else
+        {
+            deck.push_back(tempCard); 
+            deck.push_back(playerTwoHand);
+            loggerOut << "PLAYER 2: discards "<< tempCard << " at random" << std::endl;
+            tempCard = 0; 
+            // check win 
+            if(playerTwoHand == targetCard)
+            {
+                std::cout << "PLAYER 2: WIN" << std::endl; 
+                loggerOut << "PLAYER 2: wins round "<< game_round << std::endl;
+                endGame = true;
+            }
+        }
         
         if(!threeIsAgent)
             pthread_cond_signal(&thread_three_turn_cv);
         else
             pthread_cond_signal(&thread_four_turn_cv); 
+        if(DEBUG){std::cout << "2 is waiting " << std::endl; }
 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         pthread_mutex_unlock(&deckAccessMutex);
     }
+    if(endGame)
+        {
+            loggerOut << "PLAYER 2: lost round " << game_round << std::endl;
+            std::cout << "2 Exit " << std::endl;  
+        }
 
-        std::cout << "Player Two Exits" << std::endl;
+        threadExit++;
         return NULL;
         pthread_exit(NULL); 
     
@@ -373,18 +585,34 @@ void* playerTwo(void* arg)
 
 void* playerThree(void* arg)
 { 
-    std::cout << "P3 Starts Turn" << std::endl;
+    
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
     threads++;
     pthread_cond_wait(&thread_three_turn_cv,&deckAccessMutex);
-    std::cout << "P3 Ends Waits" << std::endl;
+    
     pthread_mutex_unlock(&deckAccessMutex);
+
+    if(!threeIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 3: lost round " << game_round << std::endl;
+            std::cout << "3 Exit " << std::endl; 
+            if(!fourIsAgent)
+                pthread_cond_signal(&thread_four_turn_cv);
+            else 
+                pthread_cond_signal(&thread_five_turn_cv);  
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
 
     if(threeIsAgent)
     {
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "P3 Starts Turn" << std::endl;
+   
 
        
         
@@ -394,7 +622,7 @@ void* playerThree(void* arg)
 
         targetCard = deck.front();
         drawTop(); 
-
+        std::cout << "PLAYER 3: Target Card " << targetCard << std::endl;
         playerOneHand = deck.front(); 
         drawTop(); 
 
@@ -410,19 +638,24 @@ void* playerThree(void* arg)
         playerSixHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P3 Starts game_round" << std::endl;
+        
         // start game_round 
       
         pthread_cond_signal(&thread_one_turn_cv);
-        std::cout << "P1 Come in" << std::endl;
+        
         
 
-        std::cout << "P3 Starts Wait" << std::endl;
 
         
         // the wait for game_round to end 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P3 End of game_round"<<std::endl;
+
+        if(endGame)
+        {
+            loggerOut << "PLAYER 3: lost round " << game_round << std::endl;
+            std::cout << "3 Exit " << std::endl;  
+        }
+
         pthread_mutex_unlock(&deckAccessMutex);
         threeIsAgent = false; 
         game_round++; 
@@ -432,7 +665,67 @@ void* playerThree(void* arg)
         
         
         pthread_mutex_lock(&deckAccessMutex);    
-        std::cout << "Player Three Went" << std::endl;
+
+        // Logger:
+            // PLAYER #: hand 5
+        // draw a new card
+        // Logger: 
+            //Player #: draws 7
+            // show hand
+        // discard at random 
+            // push back that card onto vector
+            // Logger: (which card was discard formatt below)
+                // PLAYER #: discards 7 at random 
+        // Logger: 
+            // PLAYER #: hand 5
+        //checks win 
+
+    // logger 
+        int tempCard = 0; 
+        loggerOut << "PLAYER 3: hand " << playerThreeHand << std::endl;
+    // draw hand and log 
+        tempCard = deck.front(); 
+        drawTop(); 
+        loggerOut << "PLAYER 3: draws  " << tempCard << std::endl;
+    // show hand 
+        loggerOut << "PLAYER 3: hand " << "(" << playerThreeHand << ","<< tempCard << ")" << " <> " << "Target card is " << targetCard << std::endl;
+        std::cout << "PLAYER 3: hand " << "(" << playerThreeHand << ","<< tempCard << ")" << std::endl; 
+        
+    // discard and check win    
+        if(probOfSwap() > 5)
+        {
+            // push back cards 
+            deck.push_back(playerThreeHand);
+            deck.push_back(tempCard); 
+            //logger 
+            loggerOut << "PLAYER 3: discards "<< playerThreeHand << " at random" << std::endl;
+            playerOneHand = tempCard; 
+            // check now if playerHand is winner 
+
+            // check win 
+            if(playerThreeHand == targetCard)
+            {
+                loggerOut << "PLAYER 3: wins round "<< game_round << std::endl;
+                std::cout << "PLAYER 3: WIN" << std::endl; 
+                endGame = true;
+            }
+
+        }
+        else
+        {
+            deck.push_back(tempCard); 
+            deck.push_back(playerThreeHand);
+            loggerOut << "PLAYER 3: discards "<< tempCard << " at random" << std::endl;
+            tempCard = 0; 
+            // check win 
+            if(playerThreeHand == targetCard)
+            {
+                std::cout << "PLAYER 3: WIN" << std::endl; 
+                loggerOut << "PLAYER 3: wins round "<< game_round << std::endl;
+                endGame = true;
+            }
+        }
+
         if(!fourIsAgent)
             pthread_cond_signal(&thread_four_turn_cv);
         else 
@@ -441,25 +734,47 @@ void* playerThree(void* arg)
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         pthread_mutex_unlock(&deckAccessMutex); 
     }
-    std::cout << "Player Three Exits" << std::endl;
+    threadExit++;
     return NULL;
     pthread_exit(NULL);
 }
 
 void* playerFour(void* arg)
 { 
-    std::cout << "P4 Starts Turn" << std::endl;
+    
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
     threads++;
     pthread_cond_wait(&thread_four_turn_cv,&deckAccessMutex);
-    std::cout << "P4 Ends Waits" << std::endl;
+   
     pthread_mutex_unlock(&deckAccessMutex);
+
+    if(!fourIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 4: lost round " << game_round << std::endl;
+            std::cout << "4 Exit " << std::endl; 
+            if(!fiveIsAgent)
+            {
+                pthread_cond_signal(&thread_five_turn_cv);
+            }
+            else
+            {
+            
+                pthread_cond_signal(&thread_six_turn_cv);
+            } 
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
+
 
     if(fourIsAgent)
     {
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "P4 Starts Turn" << std::endl;
+       
 
        
         
@@ -468,6 +783,7 @@ void* playerFour(void* arg)
         shuffle_deck(); 
 
         targetCard = deck.front();
+        std::cout << "PLAYER 4: Target Card " << targetCard << std::endl;
         drawTop(); 
 
         playerOneHand = deck.front(); 
@@ -485,19 +801,25 @@ void* playerFour(void* arg)
         playerSixHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P4 Starts game_round" << std::endl;
+        
         // start game_round 
       
         pthread_cond_signal(&thread_one_turn_cv);
-        std::cout << "P1 Come in" << std::endl;
+        
         
 
-        std::cout << "P4 Starts Wait" << std::endl;
+       
 
         
         // the wait for game_round to end 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P4 End of game_round"<<std::endl;
+
+        if(endGame)
+        {
+            loggerOut << "PLAYER 4: lost round " << game_round << std::endl;
+            std::cout << "4 Exit " << std::endl;  
+        }
+
         pthread_mutex_unlock(&deckAccessMutex);
         fourIsAgent = false; 
         game_round++; 
@@ -507,18 +829,74 @@ void* playerFour(void* arg)
         
         
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "Player Four Went" << std::endl;
+       // Logger:
+            // PLAYER #: hand 5
+        // draw a new card
+        // Logger: 
+            //Player #: draws 7
+            // show hand
+        // discard at random 
+            // push back that card onto vector
+            // Logger: (which card was discard formatt below)
+                // PLAYER #: discards 7 at random 
+        // Logger: 
+            // PLAYER #: hand 5
+        //checks win 
+
+    // logger 
+        int tempCard = 0; 
+        loggerOut << "PLAYER 4: hand " << playerFourHand << std::endl;
+    // draw hand and log 
+        tempCard = deck.front(); 
+        drawTop(); 
+        loggerOut << "PLAYER 4: draws  " << tempCard << std::endl;
+    // show hand 
+        loggerOut << "PLAYER 4: hand " << "(" << playerFourHand << ","<< tempCard << ")" << " <> " << "Target card is " << targetCard << std::endl;
+        std::cout << "PLAYER 4: hand " << "(" << playerFourHand << ","<< tempCard << ")" << std::endl; 
+        
+    // discard and check win    
+        if(probOfSwap() > 5)
+        {
+            // push back cards 
+            deck.push_back(playerFourHand);
+            deck.push_back(tempCard); 
+            //logger 
+            loggerOut << "PLAYER 4: discards "<< playerFourHand << " at random" << std::endl;
+            playerOneHand = tempCard; 
+            // check now if playerHand is winner 
+
+            // check win 
+            if(playerFourHand == targetCard)
+            {
+                loggerOut << "PLAYER 4: wins round "<< game_round << std::endl;
+                std::cout << "PLAYER 4: WIN" << std::endl; 
+                endGame = true;
+            }
+
+        }
+        else
+        {
+            deck.push_back(tempCard); 
+            deck.push_back(playerFourHand);
+            loggerOut << "PLAYER 1: discards "<< tempCard << " at random" << std::endl;
+            tempCard = 0; 
+            // check win 
+            if(playerFourHand == targetCard)
+            {
+                std::cout << "PLAYER 1: WIN" << std::endl; 
+                loggerOut << "PLAYER 1: wins round "<< game_round << std::endl;
+                endGame = true;
+            }
+        }
 
         if(!fiveIsAgent)
         {
-            std::cout << "P4 signal 5" << std::endl;
-            std::cout << "fiveIsAgent: " << fiveIsAgent << std::endl;
+           
             pthread_cond_signal(&thread_five_turn_cv);
         }
         else
         {
-            std::cout << "P4 signal 6" << std::endl;
-            std::cout << "fiveIsAgent: " << fiveIsAgent << std::endl;
+        
             pthread_cond_signal(&thread_six_turn_cv);
         }
 
@@ -526,8 +904,7 @@ void* playerFour(void* arg)
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
         pthread_mutex_unlock(&deckAccessMutex); 
     }
-
-    std::cout << "Player Four Exits" << std::endl;
+    threadExit++;
     return NULL;
     pthread_exit(NULL);    
 }
@@ -535,18 +912,41 @@ void* playerFour(void* arg)
 
 void* playerFive(void* arg)
 { 
-    std::cout << "P5 Starts Turn" << std::endl;
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
     threads++;
     pthread_cond_wait(&thread_five_turn_cv,&deckAccessMutex);
-    std::cout << "P5 Ends Waits" << std::endl;
+
     pthread_mutex_unlock(&deckAccessMutex);
+
+   if(!fiveIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 5: lost round " << game_round << std::endl;
+            std::cout << "5 Exit " << std::endl; 
+            if(!sixIsAgent)
+            {
+                pthread_cond_signal(&thread_six_turn_cv);
+                pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
+                pthread_mutex_unlock(&deckAccessMutex); 
+            }
+            else
+            {
+            // if six is agent then the thread signals end of round
+                pthread_mutex_unlock(&deckAccessMutex);
+                pthread_cond_broadcast(&endOfRound_cv);
+            }
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
 
     if(fiveIsAgent)
     {
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "P5 Starts Turn" << std::endl;
+        
 
        
         
@@ -556,6 +956,7 @@ void* playerFive(void* arg)
 
         targetCard = deck.front();
         drawTop(); 
+        std::cout << "PLAYER 5: Target Card " << targetCard << std::endl;
 
         playerOneHand = deck.front(); 
         drawTop(); 
@@ -572,19 +973,22 @@ void* playerFive(void* arg)
         playerSixHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P4 Starts game_round" << std::endl;
+        
         // start game_round 
       
         pthread_cond_signal(&thread_one_turn_cv);
-        std::cout << "P1 Come in" << std::endl;
-        
-
-        std::cout << "P4 Starts Wait" << std::endl;
+       
 
         
         // the wait for game_round to end 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P4 End of game_round"<<std::endl;
+
+        if(endGame)
+        {
+            loggerOut << "PLAYER 5: lost round " << game_round << std::endl;
+            std::cout << "5 Exit " << std::endl;  
+        }
+
         pthread_mutex_unlock(&deckAccessMutex);
         fiveIsAgent = false; 
         game_round++; 
@@ -594,7 +998,7 @@ void* playerFive(void* arg)
         
         
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "Player Five Went" << std::endl;
+       
 
         if(!sixIsAgent)
         {
@@ -607,31 +1011,44 @@ void* playerFive(void* arg)
             // if six is agent then the thread signals end of round
             pthread_mutex_unlock(&deckAccessMutex);
             pthread_cond_broadcast(&endOfRound_cv);
+            pthread_cond_broadcast(&endOfRound_cv);
         }
         
 
     }
-    std::cout << "Player five Exits" << std::endl;
+    threadExit++;
     return NULL;
     pthread_exit(NULL);   
 }
 
 void* playerSix(void* arg)
 { 
-    std::cout << "P6 Starts Turn" << std::endl;
+   
     pthread_mutex_lock(&deckAccessMutex);
     // This is to make sure one goes when it needs to go 
     threads++;
+
     pthread_cond_wait(&thread_six_turn_cv,&deckAccessMutex);
-    
-    std::cout << "P6 Ends Waits" << std::endl;
+    std::cout << "6 End wait " << std::endl; 
     pthread_mutex_unlock(&deckAccessMutex);
 
+    if(!sixIsAgent)
+    {
+        if(endGame)
+        {
+            loggerOut << "PLAYER 6: lost round " << game_round << std::endl;
+            std::cout << "6 Exit " << std::endl; 
+            pthread_cond_broadcast(&endOfRound_cv);
+            pthread_cond_signal(&endOfRound_cv);
+            threadExit++;
+            return NULL;  
+            pthread_exit(NULL); 
+        }
+    } 
     if(sixIsAgent)
     {
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "P6 Starts Turn" << std::endl;
-
+        
         
         
         
@@ -640,6 +1057,7 @@ void* playerSix(void* arg)
 
         targetCard = deck.front();
         drawTop(); 
+        std::cout << "PLAYER 6: Target Card " << targetCard << std::endl;
 
         playerOneHand = deck.front(); 
         drawTop(); 
@@ -656,30 +1074,30 @@ void* playerSix(void* arg)
         playerFiveHand = deck.front(); 
         drawTop(); 
 
-        std::cout << "P1 Starts game_round" << std::endl;
+       
         // start game_round 
       
         pthread_cond_signal(&thread_one_turn_cv);
-        std::cout << "P1 Come in" << std::endl;
-        
-
-        std::cout << "P6 Starts Wait" << std::endl;
-
+       
         
         // the wait for game_round to end 
         pthread_cond_wait(&endOfRound_cv,&deckAccessMutex);
-        std::cout<<"P6 end of game_round"<<std::endl;
+
+        if(endGame)
+        {
+            loggerOut << "PLAYER 6: lost round " << game_round << std::endl;
+            std::cout << "6 Exit " << std::endl;  
+        }
+
         pthread_mutex_unlock(&deckAccessMutex);
-        fourIsAgent = false; 
+        sixIsAgent = false; 
         game_round++; 
     }
     else{
         
         
         pthread_mutex_lock(&deckAccessMutex);
-        std::cout << "Player Six Went" << std::endl;
-
-        std::cout << "End of Game" << std::endl;
+       
 
         pthread_mutex_unlock(&deckAccessMutex);
 
@@ -687,7 +1105,8 @@ void* playerSix(void* arg)
         // six is the agent 
         pthread_cond_broadcast(&endOfRound_cv);
     }
-    std::cout << "Player Six Exits" << std::endl;
+
+    threadExit++;
     return NULL;
     pthread_exit(NULL);     
 }
@@ -745,8 +1164,10 @@ void threadCreate()
     printf("Thread exited with status %d\n", (intptr_t) result5);
     printf("Thread exited with status %d\n", (intptr_t) result6);
     printf("Thread exited with status %d\n", (intptr_t) result7);
-    std::cout << game_round << std::endl; 
-    std::cout << std::endl; 
+
+    
+    //std::cout << game_round << std::endl; 
+    //std::cout << std::endl; 
 }
 
 // Main
@@ -756,10 +1177,12 @@ int main(int argc, char* argv[])
 {
 
    // randomSeed = atoi(argv[1]);
+
     randomSeed = 9; 
+    openAndCreateFile(); 
     for(int i = 0; i < 6; i++)
         threadCreate(); 
-    
-
+    loggerOut << "_______________________" << std::endl; 
+    closeFile(); 
     return 0; 
 }

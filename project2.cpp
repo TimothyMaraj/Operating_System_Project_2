@@ -15,9 +15,14 @@
 
 
 const int TRUE = 0; 
+int count = 0; 
+bool endThread = true; 
 
 void* print_char(void* arg) {
     char c = *(char*)arg;
+    count++; 
+    if(count == 3)
+        pthread_exit(NULL); 
     std::cout << c << std::endl;
     return NULL;
 }
@@ -219,31 +224,7 @@ void* thread_one(void* arg)
 int main()
 {
 
-int starter = 1; 
-int* firstPlayer = &starter; 
-
-
-pthread_t agentThread; 
-pthread_t playerOne,playerTwo; 
-pthread_create(&agentThread,NULL,agentFuntion,(void*)firstPlayer);
-pthread_create(&playerOne,NULL,thread_one,NULL);
-
-pthread_mutex_lock(&deckAccessMutex);
-while(!endGame)
-{
-    pthread_cond_wait(&endOfGame_cv,&deckAccessMutex);
-}
-pthread_mutex_unlock(&deckAccessMutex);
-
-
-// destroy mutexs
-pthread_mutex_destroy(&deckAccessMutex);
-
-// destroy condition vars
-pthread_cond_destroy(&thread_one_turn_cv);
-pthread_cond_destroy(&thread_two_turn_cv);
-pthread_cond_destroy(&end_of_round_cv);
-
+threads(); 
 
 pthread_exit (NULL); 
 return 0; 
